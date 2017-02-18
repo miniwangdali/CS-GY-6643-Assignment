@@ -1,12 +1,14 @@
-[u, v] = textread('imageUVData.txt', '%u,%u');
+clear all;
+clc;
+close all;
+[u, v] = textread('imageUVData.txt', '%f,%f');
 imageUV = [u, v];
-[x, y, z] = textread('Coordinates3DData.txt', '%u,%u,%u');
+[x, y, z] = textread('Coordinates3DData.txt', '%f,%f,%f');
 worldXYZ = [x, y, z];
+figure(1);
 patternImageMatrix = imread('pattern.jpg');
-% grayImageMatrix = rgb2gray(patternImageMatrix);
 set(gcf, 'position',[0, 0, 1920,1080]);
 h = image(patternImageMatrix);
-% colormap(gray);
 hold on;
 for i = 1:1:length(imageUV)
     plot(imageUV(i, 1), imageUV(i, 2), 'o','MarkerSize', 3, 'Color',[1.0, 0.0, 0.0]);
@@ -20,64 +22,54 @@ text(1617, 2878, 'y','Color',[0.4, 0.8, 1.0]);
 line([1568, 1565], [2863, 2703], 'Color',[0.4, 0.8, 1.0]);
 text(1575, 2713, 'z','Color',[0.4, 0.8, 1.0]);
 saveas(h, 'preview.jpg');
-pMatrix = zeros(320, 12);
-for i = 1:1:160
-    uI = 2 * i - 1;
-    vI = i;
-    pMatrix(uI, 1) = worldXYZ(i, 1);
-    pMatrix(uI, 2) = worldXYZ(i, 2);
-    pMatrix(uI, 3) = worldXYZ(i, 3);
-    pMatrix(uI, 4) = 1;
-    pMatrix(uI, 9) = - imageUV(i, 1) * worldXYZ(i, 1);
-    pMatrix(uI, 10) = - imageUV(i, 1) * worldXYZ(i, 2);
-    pMatrix(uI, 11) = - imageUV(i, 1) * worldXYZ(i, 3);
-    pMatrix(uI, 12) = - imageUV(i, 1);
-    
-    pMatrix(vI, 5) = worldXYZ(i, 1);
-    pMatrix(vI, 6) = worldXYZ(i, 2);
-    pMatrix(vI, 7) = worldXYZ(i, 3);
-    pMatrix(vI, 8) = 1;
-    pMatrix(vI, 9) = - imageUV(i, 2) * worldXYZ(i, 1);
-    pMatrix(vI, 10) = - imageUV(i, 2) * worldXYZ(i, 2);
-    pMatrix(vI, 11) = - imageUV(i, 2) * worldXYZ(i, 3);
-    pMatrix(vI, 12) = - imageUV(i, 2);
+
+n = length(imageUV);
+P = [];
+for i = 1:1:n
+    P = [
+        P;
+        worldXYZ(i, :),1,0,0,0,0,- imageUV(i, 1) * worldXYZ(i, :), - imageUV(i, 1);
+        0,0,0,0,worldXYZ(i, :),1,- imageUV(i, 2) * worldXYZ(i, :), - imageUV(i, 2)
+        ];
 end
-[U, S, V] = svd(pMatrix);
+[U, S, V] = svd(P);
 [min_val, min_index] = min(diag(S(1:12, 1:12)));
-mMatrix = V(1:12, min_index);
-mMatrix = reshape(mMatrix, 3, 4);
-% epsilon = 1;
-syms a31 a32 a33;
-eqn1 = mMatrix(3, 1) == (a31^2 + a32^2 + a33^2) * a31;
-eqn2 = mMatrix(3, 2) == (a31^2 + a32^2 + a33^2) * a32;
-eqn3 = mMatrix(3, 3) == (a31^2 + a32^2 + a33^2) * a33;
-[a31, a32, a33] = solve(eqn1, eqn2, eqn3, a31, a32, a33, 'Real', 1);
-a3 = double([a31, a32, a33]);
-rou = norm(a3);
-a2 = mMatrix(2, 1:3) / rou;
-a1 = mMatrix(1, 1:3) / rou;
-u0 = rou^2 * dot(a1, a3);
-v0 = rou^2 * dot(a2, a3);
-cosTheta = - (dot(cross(a1, a3), cross(a2, a3)) / (norm(cross(a1, a3)) * norm(cross(a2, a3))));
-theta = rad2deg(acos(cosTheta));
-sinTheta = sin(theta);
-alpha = rou^2 * norm(cross(a1, a3)) * sinTheta;
-beta = rou^2 * norm(cross(a2, a3)) * sinTheta;
+m = V(1:12, min_index);
+M = [m(1),m(2),m(3),m(4);
+     m(5),m(6),m(7),m(8);
+     m(9),m(10),m(11),m(12)]
+
+a1 = [m(1),m(2),m(3)];
+a2 = [m(5),m(6),m(7)];
+a3 = [m(9),m(10),m(11)];
+
+rou = -1 / norm(a3)
+u0 = rou * rou * dot(a1, a3)
+v0 = rou * rou * dot(a2, a3)
+theta = acos(- (dot(cross(a1, a3), cross(a2, a3)) / (norm(cross(a1, a3)) * norm(cross(a2, a3)))))
+alpha = rou * rou * norm(cross(a1, a3)) * sin(theta)
+beta = rou * rou * norm(cross(a2, a3)) * sin(theta)
+
 r3 = rou * a3;
-r1 = cross(a2, a3) / norm(cross(a2, a3));
-r2 = cross(a3, a1);
-tZ = mMatrix(3, 4);
-tY = (mMatrix(2, 4) - v0 * tZ) / beta * sinTheta;
-tX = (mMatrix(1, 4) - u0 * tZ + alpha * cot(theta) * tY) / alpha;
-rotationMatrix = [r1; r2; r3];
-dispMatrix = [tX; tY; tZ];
-intrinsicMatrix = [alpha, -alpha * cot(theta), u0, 0; 0, beta / sinTheta, v0, 0; 0, 0, 1, 0];
-extrinsicMatrix = [rotationMatrix, dispMatrix; 0, 0, 0, 1];
-focal = 3.79;
-reconstructMatrix = zeros(160, 3);
-for i = 1:1:160
-    reconstructMatrix(i,:) = 1 / focal * intrinsicMatrix * extrinsicMatrix * [worldXYZ(i,:)';1];
+r1 = 1 / norm(cross(a2, a3)) * cross(a2, a3);
+r2 = cross(r3, r1);
+tZ = M(3, 4);
+tY = (M(2, 4) - v0 * tZ) / (beta / sin(theta));
+tX = (M(1, 4) - u0 * tZ + alpha * cot(theta) * tY) / alpha;
+R = [r1; r2; r3]
+T = rou * [tX; tY; tZ]
+intrinsicMatrix = [alpha, -alpha * cot(theta), u0, 0; 0, beta / sin(theta), v0, 0; 0, 0, 1, 0]
+extrinsicMatrix = [R(1, :), T(1); R(2, :), T(2); R(3, :), T(3); 0, 0, 0, 1]
+reconstructMatrix = zeros(n, 2);
+fid = fopen('reconstructUV.txt', 'wt');
+for i = 1:1:n
+    P1 = transpose([worldXYZ(i, :),1]);
+    reconstructMatrix(i, 1) = M(1, :) * P1 / (M(3, :) * P1);
+    reconstructMatrix(i, 2) = M(2, :) * P1 / (M(3, :) * P1);
+    fprintf(fid, '%f,', reconstructMatrix(i, 1));
+    fprintf(fid, '%f\n', reconstructMatrix(i, 2));
 end
-% epsilon = -1;
+fclose(fid);
+
 
 

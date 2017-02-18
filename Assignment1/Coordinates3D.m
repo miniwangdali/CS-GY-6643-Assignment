@@ -1,18 +1,19 @@
-mLength = 28;
+mHeight = 28.3;
+mWidth = 27.7;
 offsetX = 10;
 offsetY = 9;
 offsetZ = 0;
 fid = fopen('Coordinates3DData.txt', 'wt');
-for z = 10:-1:1
-    for x = 8:-1:1
-        fprintf(fid, '%d,', x * mLength + offsetX);
-        fprintf(fid, '%d,', 0);
-        fprintf(fid, '%d\n', z * mLength + offsetZ);
+for z = 9:-1:0
+    for x = 7:-1:0
+        fprintf(fid, '%f,', x * mWidth + offsetX);
+        fprintf(fid, '%f,', 0);
+        fprintf(fid, '%f\n', z * mHeight + offsetZ);
     end
-    for y = 1:1:8
-        fprintf(fid, '%d,', 0);
-        fprintf(fid, '%d,', y * mLength + offsetY);
-        fprintf(fid, '%d\n', z * mLength + offsetZ);
+    for y = 0:1:7
+        fprintf(fid, '%f,', 0);
+        fprintf(fid, '%f,', y * mWidth + offsetY);
+        fprintf(fid, '%f\n', z * mHeight + offsetZ);
     end
 end
 fclose(fid);
