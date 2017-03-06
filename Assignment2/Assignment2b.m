@@ -35,9 +35,9 @@ for i = 1:1:7
 end
 hold off;
 
-f = 3.79;
+f = 28;
 B = 100;
-density = 1 / 900;
+density = 0.84;
 u0 = 1560;
 v0 = 2080;
 coordinate = [];
@@ -46,7 +46,7 @@ for i = 1:1:7
     v1 = uvLeft(i, 2);
     u2 = uvRight(i, 1);
     v2 = uvRight(i, 2);
-    Z = f * B / ((u1 - u2) * density);
+    Z = f * B / (abs(u1 - u2) * density);
     X = (u1 - u0) / f * Z;
     Y = (v1 - v0) / f * Z;
     coordinate = [
@@ -71,3 +71,6 @@ line([coordinate(2,1),coordinate(6,1)],[coordinate(2,2),coordinate(6,2)],[coordi
 line([coordinate(3,1),coordinate(7,1)],[coordinate(3,2),coordinate(7,2)],[coordinate(3,3),coordinate(7,3)], 'LineWidth', 1.0, 'Color', [0.13, 0.59, 0.95]);
 
 % 69 * 69 * 80
+sqrt((coordinate(1,1) - coordinate(2,1)) ^ 2 + (coordinate(1,2) - coordinate(2,2)) ^ 2 + (coordinate(1,3) - coordinate(2,3)) ^ 2)
+sqrt((coordinate(2,1) - coordinate(3,1)) ^ 2 + (coordinate(2,2) - coordinate(3,2)) ^ 2 + (coordinate(2,3) - coordinate(3,3)) ^ 2)
+sqrt((coordinate(1,1) - coordinate(5,1)) ^ 2 + (coordinate(1,2) - coordinate(5,2)) ^ 2 + (coordinate(1,3) - coordinate(5,3)) ^ 2)

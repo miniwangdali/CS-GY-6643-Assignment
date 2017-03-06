@@ -11,6 +11,8 @@ figure(1);
 set(gcf, 'position',[300, 200, 640, 720]);
 imagesc(leftImage);
 % Specify a set of corresponding pixel landmark pairs in the left and right camera views.
+% [u, v] = textread('uvLeft.txt','%f,%f');
+% uvLeft = [u, v];
 uvLeft = [];
 hold on;
 for i = 1:1:n
@@ -22,9 +24,12 @@ for i = 1:1:n
     ];
 end
 hold off;
+
 figure(2);
 set(gcf, 'position',[940, 200, 640, 720]);
 imagesc(rightImage);
+% [u, v] = textread('uvRight.txt','%f,%f');
+% uvRight = [u, v];
 uvRight = [];
 hold on;
 for i = 1:1:n
@@ -36,6 +41,7 @@ for i = 1:1:n
     ];
 end
 hold off;
+
 % Calculate the F-matrix using instructions as discussed in the slides.
 P = [];
 for i = 1:1:n
@@ -54,6 +60,7 @@ F = [
     f(4), f(5), f(6);
     f(7), f(8), 1
 ];
+
 % Choose a point in the left image and calculate the epipolar line in the right image. Display the point and the line as overlays in your images.
 % Do the same for a point in the right image and epipolar line in the left image.
 figure(1);
@@ -62,7 +69,7 @@ leftPoint = ginput(1);
 plot(leftPoint(1), leftPoint(2), '.', 'MarkerSize', 20, 'Color', [0.95, 0.26, 0.21]);
 hold off;
 l = [leftPoint(1), leftPoint(2), 1] * F;
-L = l / norm([l(1), l(2)]);
+L = l;
 clear l;
 
 x = 0: 3120;
@@ -88,7 +95,7 @@ hold on;
 plot(rightPoint(1), rightPoint(2), '.', 'MarkerSize', 20, 'Color', [0.13, 0.59, 0.95]);
 hold off;
 l = F * [rightPoint(1); rightPoint(2); 1];
-L = l / norm([l(1), l(2)]);
+L = l;
 clear l;
 
 x = 0: 3120;
