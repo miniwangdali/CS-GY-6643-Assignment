@@ -11,34 +11,36 @@ figure(1);
 set(gcf, 'position',[300, 200, 640, 720]);
 imagesc(leftImage);
 % Specify a set of corresponding pixel landmark pairs in the left and right camera views.
-% [u, v] = textread('uvLeft.txt','%f,%f');
-% uvLeft = [u, v];
-uvLeft = [];
+[u, v] = textread('uvLeft.txt','%f,%f');
+uvLeft = [u, v];
+% uvLeft = [];
 hold on;
 for i = 1:1:n
-    [u, v] = ginput(1);
-    plot(u, v, 'g.', 'MarkerSize', 12);
-    uvLeft = [
-        uvLeft;
-        u, v;
-    ];
+%     [u, v] = ginput(1);
+%     plot(u, v, 'g.', 'MarkerSize', 12);
+%     uvLeft = [
+%         uvLeft;
+%         u, v;
+%     ];
+    plot(uvLeft(i, 1), uvLeft(i, 2),'g.', 'MarkerSize', 12);
 end
 hold off;
 
 figure(2);
 set(gcf, 'position',[940, 200, 640, 720]);
 imagesc(rightImage);
-% [u, v] = textread('uvRight.txt','%f,%f');
-% uvRight = [u, v];
-uvRight = [];
+[u, v] = textread('uvRight.txt','%f,%f');
+uvRight = [u, v];
+% uvRight = [];
 hold on;
 for i = 1:1:n
-    [u, v] = ginput(1);
-    plot(u, v, 'g.', 'MarkerSize', 12);
-    uvRight = [
-        uvRight;
-        u, v;
-    ];
+%     [u, v] = ginput(1);
+%     plot(u, v, 'g.', 'MarkerSize', 12);
+%     uvRight = [
+%         uvRight;
+%         u, v;
+%     ];
+    plot(uvRight(i, 1), uvRight(i, 2),'g.', 'MarkerSize', 12);
 end
 hold off;
 
@@ -78,15 +80,15 @@ figure(2);
 hold on;
 plot(x, y, '-', 'LineWidth', 1.0, 'Color', [0.95, 0.26, 0.21]);
 clear x y;
-% for i = 1:1:n
-%     l = [uvLeft(i, 1), uvLeft(i, 2), 1] * F;
-%     L = l / norm([l(1), l(2)]);
-%     x = 0: 3120;
-%     y = (- x * L(1) - L(3)) / L(2);
-%     plot(x, y, 'g-', 'LineWidth', 1.0);
-%     clear x y;
-%     clear l;
-% end
+for i = 1:1:n
+    l = [uvLeft(i, 1), uvLeft(i, 2), 1] * F;
+    L = l / norm([l(1), l(2)]);
+    x = 0: 3120;
+    y = (- x * L(1) - L(3)) / L(2);
+    plot(x, y, 'g-', 'LineWidth', 1.0);
+    clear x y;
+    clear l;
+end
 hold off;
 
 figure(2);
@@ -104,20 +106,21 @@ figure(1);
 hold on;
 plot(x, y, '-', 'LineWidth', 1.0, 'Color', [0.13, 0.59, 0.95]);
 clear x y;
-% for i = 1:1:n
-%     l = F * [uvRight(i, 1); uvRight(i, 2); 1];
-%     L = l / norm([l(1), l(2)]);
-%     x = 0: 3120;
-%     y = (- x * L(1) - L(3)) / L(2);
-%     plot(x, y, 'g-', 'LineWidth', 1.0);
-%     clear x y;
-%     clear l;
-% end
+for i = 1:1:n
+    l = F * [uvRight(i, 1); uvRight(i, 2); 1];
+    L = l / norm([l(1), l(2)]);
+    x = 0: 3120;
+    y = (- x * L(1) - L(3)) / L(2);
+    plot(x, y, 'g-', 'LineWidth', 1.0);
+    clear x y;
+    clear l;
+end
 hold off;
 
 
 
 % Calculate the position of the epipole of the left camera
-[u, d] = eigs(F' * F);
+[u, d] = eigs(F' * F);      % for right image 
+% [u, d] = eigs(F * F');    % for left image
 uu = u(:, 1);
 uu = uu / uu(3)
