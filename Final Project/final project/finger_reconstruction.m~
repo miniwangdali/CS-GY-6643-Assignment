@@ -1,0 +1,8 @@
+clear all;
+hand_image1 = imread('hand_1.JPG');
+hand_image2 = imread('hand_2.JPG');
+hand_image3 = imread('hand_2.JPG');
+
+result1 = positions(hand_image1);
+result2 = positions(hand_image1);
+result1 = positions(hand_image1);
